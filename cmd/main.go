@@ -47,7 +47,8 @@ func init() {
 func main() {
 	fmt.Printf("Profile to use is %s\n", profile)
 	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Profile: profile,
+		Profile:           profile,
+		SharedConfigState: session.SharedConfigEnable,
 	}))
 
 	stsClient := sts.New(sess)
@@ -87,7 +88,7 @@ func main() {
 	accessKey := sessionTolenOutput.Credentials.AccessKeyId
 	secretAccessKey := sessionTolenOutput.Credentials.SecretAccessKey
 	sessionToken := sessionTolenOutput.Credentials.SessionToken
-	defaultRegion := "ap-northeast-1"
+	defaultRegion := *sess.Config.Region
 
 	// output results
 	fmt.Println("set session token as environment variables like...")
