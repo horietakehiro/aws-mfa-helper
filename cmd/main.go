@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -90,23 +91,47 @@ func main() {
 	sessionToken := sessionTolenOutput.Credentials.SessionToken
 	defaultRegion := *sess.Config.Region
 
-	// output results
-	fmt.Println("set session token as environment variables like...")
-	fmt.Println("==============================================")
-	fmt.Printf("export AWS_ACCESS_KEY_ID=%s\n", *accessKey)
-	fmt.Printf("export AWS_SECRET_ACCESS_KEY=%s\n", *secretAccessKey)
-	fmt.Printf("export AWS_SESSION_TOKEN=%s\n", *sessionToken)
-	fmt.Printf("export AWS_DEFAULT_REGION=%s\n", defaultRegion)
-	fmt.Println("==============================================")
+	// // output results
+	// fmt.Println("set session token as environment variables like...")
+	// fmt.Println("==============================================")
+	// fmt.Printf("export AWS_ACCESS_KEY_ID=%s\n", *accessKey)
+	// fmt.Printf("export AWS_SECRET_ACCESS_KEY=%s\n", *secretAccessKey)
+	// fmt.Printf("export AWS_SESSION_TOKEN=%s\n", *sessionToken)
+	// fmt.Printf("export AWS_DEFAULT_REGION=%s\n", defaultRegion)
+	// fmt.Println("==============================================")
 
-	fmt.Println("")
+	// fmt.Println("")
+
+	// newProfileName := fmt.Sprintf("%s-mfa", profile)
+	// fmt.Println("set session token as CLI config file like...")
+	// fmt.Println("==============================================")
+	// fmt.Printf("aws configure set aws_access_key_id %s --profile %s\n", *accessKey, newProfileName)
+	// fmt.Printf("aws configure set aws_secret_access_key %s --profile %s\n", *secretAccessKey, newProfileName)
+	// fmt.Printf("aws configure set aws_session_token %s --profile %s\n", *sessionToken, newProfileName)
+	// fmt.Printf("aws configure set region %s --profile %s\n", defaultRegion, newProfileName)
+	// fmt.Println("==============================================")
 
 	newProfileName := fmt.Sprintf("%s-mfa", profile)
-	fmt.Println("set session token as CLI config file like...")
-	fmt.Println("==============================================")
-	fmt.Printf("aws configure set aws_access_key_id %s --profile %s\n", *accessKey, newProfileName)
-	fmt.Printf("aws configure set aws_secret_access_key %s --profile %s\n", *secretAccessKey, newProfileName)
-	fmt.Printf("aws configure set aws_session_token %s --profile %s\n", *sessionToken, newProfileName)
-	fmt.Printf("aws configure set region %s --profile %s\n", defaultRegion, newProfileName)
-	fmt.Println("==============================================")
+	_, err = exec.Command("aws", "configure", "set", "aws_access_key_id", *accessKey, "--profile", newProfileName).CombinedOutput()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	_, err = exec.Command("aws", "configure", "set", "aws_secret_access_key", *secretAccessKey, "--profile", newProfileName).CombinedOutput()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	_, err = exec.Command("aws", "configure", "set", "aws_session_token", *sessionToken, "--profile", newProfileName).CombinedOutput()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+	_, err = exec.Command("aws", "configure", "set", "region", defaultRegion, "--profile", newProfileName).CombinedOutput()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Printf("Successfully configure credentials at profile : [%s]\n", newProfileName)
 }
